@@ -1,5 +1,5 @@
-import os
 import cv2
+import os
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
@@ -7,59 +7,51 @@ from sklearn.metrics import accuracy_score
 from skimage import feature
 from tqdm import tqdm
 import joblib
-# Function to extract HOG features from an image
-def extract_hog_features(image_path, min_size=(32, 32)):
-    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    if image is None:
-        print(f"Error loading image: {image_path}")
-        return None
-    if image.shape[0] < min_size[0] or image.shape[1] < min_size[1]:
-        image = cv2.resize(image, min_size, interpolation=cv2.INTER_LINEAR)
-    hog_features = feature.hog(image, block_norm='L2-Hys', pixels_per_cell=(16, 16))
-    return hog_features
+import sys
+import matplotlib.pyplot as plt
+sys.path.append("./helpers")
+from helpers.imagePath import GetLiveImagePaths, GetSpoofImagePaths
+from helpers.preprocessimages import PreprocessImage, ConvertToGreyscale
+from helpers.haarfeature import GetFaceImageOrDetectFace
 
-# Function to extract HOG features from a batch of images
-def extract_hog_features_batch(image_paths, min_size=(32, 32)):
-    features_list = []
-    for image_path in image_paths:
-        features = extract_hog_features(image_path, min_size)
-        if features is not None:
-            features_list.append(features)
-    return features_list
 
-# Path to the folder containing spoofed and live images
-spoof_folder_path = r"C:\Users\sebas\Documents\FaceSpoofsDatasets\zips\CelebA_Spoof_train\Data\spoofedimagestest2"
-live_folder_path = r"C:\Users\sebas\Documents\FaceSpoofsDatasets\zips\CelebA_Spoof_train\Data\liveimagestest2"
 
-# List to store image paths and labels
-spoof_image_paths = []
-live_image_paths = []
 
-# Iterate over files in the folder with tqdm for the progress bar
-for filename in tqdm(os.listdir(spoof_folder_path), desc="Loading spoof images", unit="image"):
-    if filename.endswith(".png"):
-        # Append image path
-        spoof_image_path = os.path.join(spoof_folder_path, filename)
-        spoof_image_paths.append(spoof_image_path)
-
-for filename in tqdm(os.listdir(live_folder_path), desc="Loading live images", unit="image"):
-    if filename.endswith(".png"):
-        # Append image path
-        live_image_path = os.path.join(live_folder_path, filename)
-        live_image_paths.append(live_image_path)
-
+# 1. getting images and labels
+spoof_image_paths = GetSpoofImagePaths()
+live_image_paths = GetLiveImagePaths()
 # Labels: 1 for spoofed, 0 for live
 spoof_labels = [1] * len(spoof_image_paths)
 live_labels = [0] * len(live_image_paths)
-
 # Combine spoof and live paths and labels
 image_paths = spoof_image_paths + live_image_paths
 labels = spoof_labels + live_labels
 
-# Shuffle the data
-#combined_data = list(zip(image_paths, labels))
-#np.random.shuffle(combined_data)
-#image_paths, labels = zip(*combined_data)
+# 2. preprocess all images to be greyscale
+grey_images = []
+for image_path in image_paths:
+    grey_images.append(ConvertToGreyscale(image_path))
+
+# 3. get haar features
+face_images = []
+for grey_image in grey_images:
+    face_images.append(GetFaceImageOrDetectFace(grey_image))
+
+# 4. preprocess images
+preprocessed_face_images = []
+for grey_image in grey_images:
+    preprocessed_face_images.append(PreprocessImage(grey_image))
+
+for face_image in preprocessed_face_images:
+    plt.imshow(face_image)  # Assuming face_image is a grayscale image
+    plt.show()
+
+del face_images
+del grey_images
+
+# 5. use pca
+
+# 6. train model
 
 # Use a generator for feature extraction
 def feature_generator(image_paths, labels, batch_size=32):
