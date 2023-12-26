@@ -6,6 +6,7 @@ from skimage.transform import resize
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
+import joblib
 
 
 input_dir = r"C:\Users\sebas\Documents\FaceSpoofsDatasets\zips\CelebA_Spoof_train\Data"
@@ -38,3 +39,4 @@ score = accuracy_score(y_prediction, y_test)
 print('{}% of samples were correctly classified'.format(str(score * 100)))
 
 pickle.dump(classifier, open('./faceantispoofmodel.p', 'wb'))
+joblib.dump(classifier, 'faceantispoofmodel.joblib')
