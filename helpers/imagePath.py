@@ -4,7 +4,7 @@ import cv2
 
 spoof_folder_path = r"C:\Users\sebas\Documents\FaceSpoofsDatasets\zips\CelebA_Spoof_train\Data\spoofedimages2"
 live_folder_path = r"C:\Users\sebas\Documents\FaceSpoofsDatasets\zips\CelebA_Spoof_train\Data\liveimages2"
-output_folder = r"C:\Users\sebas\Documents\FaceSpoofsDatasets\zips\CelebA_Spoof_train\Data\images2greyscale"
+output_folder = r"C:\Users\sebas\Documents\FaceSpoofsDatasets\zips\CelebA_Spoof_train\Data\realdata"
 
 # List to store image paths and labels
 spoof_image_paths = []
@@ -24,9 +24,11 @@ def GetLiveImagePaths():
             live_image_paths.append(live_image_path)
     return live_image_paths
 
-def SaveImages(images):
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
+def SaveImages(images, folder_name):
+    rOutputFolder = output_folder + f"\{folder_name}"
+    if not os.path.exists(rOutputFolder):
+        os.makedirs(rOutputFolder)
     for i, image in enumerate(images):
-        output_path = os.path.join(output_folder, f"output_image_{i}.png")
-        cv2.imwrite(output_path, image)
+        if image is not None:
+            output_path = os.path.join(rOutputFolder, f"output_image_{i}.png")
+            cv2.imwrite(output_path, image)

@@ -10,10 +10,9 @@ import joblib
 import sys
 import matplotlib.pyplot as plt
 sys.path.append("./helpers")
-from helpers.imagePath import GetLiveImagePaths, GetSpoofImagePaths
+from helpers.imagePath import GetLiveImagePaths, GetSpoofImagePaths, SaveImages
 from helpers.preprocessimages import PreprocessImage, ConvertToGreyscale
-from helpers.haarfeature import GetFaceImageOrDetectFace
-
+from helpers.haarfeature import GetFaceImage
 
 
 
@@ -27,28 +26,26 @@ live_labels = [0] * len(live_image_paths)
 image_paths = spoof_image_paths + live_image_paths
 labels = spoof_labels + live_labels
 
-# 2. preprocess all images to be greyscale
-grey_images = []
-for image_path in image_paths:
-    grey_images.append(ConvertToGreyscale(image_path))
+# 2. preprocess spoof images to be greyscale
+grey_spoof_images = []
+for spoof_image_path in spoof_image_paths:
+    grey_spoof_images.append(ConvertToGreyscale(spoof_image_path))
+
+SaveImages(grey_spoof_images, r"\spoof\greyscale_spoof_images")
 
 # 3. get haar features
-face_images = []
-for grey_image in grey_images:
-    face_images.append(GetFaceImageOrDetectFace(grey_image))
+face_spoof_images = []
+for grey_spoof_image in grey_spoof_images:
+    face_spoof_from_grey = GetFaceImage(grey_spoof_image)
+    if face_spoof_from_grey is not None:
+        face_spoof_images.append(face_spoof_from_grey)
+SaveImages(face_spoof_images, r"\spoof\face_spoof_images")
 
 # 4. preprocess images
 preprocessed_face_images = []
-for grey_image in grey_images:
-    preprocessed_face_images.append(PreprocessImage(grey_image))
-
-for face_image in preprocessed_face_images:
-    plt.imshow(face_image)  # Assuming face_image is a grayscale image
-    plt.show()
-
-del face_images
-del grey_images
-
+#for face_spoof_image in face_spoof_images:
+preprocessed_face_images.append(PreprocessImage(r"C:\Users\sebas\Documents\FaceSpoofsDatasets\zips\CelebA_Spoof_train\Data\realdata\spoof\face_spoof_images\output_image_0.png"))
+SaveImages(preprocessed_face_images, r"\spoof\preprocessed_face_spoof_images")
 # 5. use pca
 
 # 6. train model
