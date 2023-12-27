@@ -38,5 +38,5 @@ y_prediction = classifier.predict(x_test)
 score = accuracy_score(y_prediction, y_test)
 print('{}% of samples were correctly classified'.format(str(score * 100)))
 
-pickle.dump(classifier, open('./faceantispoofmodel.p', 'wb'))
-joblib.dump(classifier, 'faceantispoofmodel.joblib')
+pickle.dump(classifier, open('./faceantispoofmodel1000.p', 'wb'))
+joblib.dump(classifier, 'faceantispoofmodel1000.joblib')
