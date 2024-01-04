@@ -1,4 +1,6 @@
 import os
+
+import cv2
 import numpy as np
 import pickle
 from skimage.io import imread
@@ -13,14 +15,13 @@ from helpers.imagePath import SaveImagesScikit, SaveImages
 
 input_dir = r"C:\Users\sebas\Documents\FaceSpoofsDatasets\zips\CelebA_Spoof_train\Data"
 output_folder = r"C:\Users\sebas\Documents\FaceSpoofsDatasets\zips\CelebA_Spoof_train\Data\processedImages"
-categories = ["spoofedimagestest3", "liveimagestest3"]
+categories = ["spoofedimagestest4", "liveimagestest3"]
 
 def ShowImage(image):
     plt.imshow(image, cmap='gray')
     plt.title('Processed Image')
     plt.axis('on')
     plt.show()
-
 
 data = []
 labels = []
