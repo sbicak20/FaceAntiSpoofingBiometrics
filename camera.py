@@ -1,5 +1,8 @@
 import cv2
 import joblib
+from skimage import restoration
+from skimage.exposure import exposure
+from skimage.feature import hog
 from skimage.transform import resize
 
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -19,8 +22,12 @@ while True:
         face_region = gray_frame[y:y+h, x:x+w]
 
         preprocessed_face = resize(face_region, (64, 64), anti_aliasing=True)
-        preprocessed_face = preprocessed_face.flatten()
-
+        img_denoised = restoration.denoise_bilateral(preprocessed_face, sigma_color=0.05, sigma_spatial=15)
+        img_adaptive_equalized = exposure.equalize_adapthist(img_denoised, clip_limit=0.03)
+        features_per_image, _ = hog(img_adaptive_equalized, orientations=8, pixels_per_cell=(10, 10),
+                                    cells_per_block=(3, 3),
+                                    visualize=True)
+        preprocessed_face.extend(features_per_image.flatten())
         data = preprocessed_face.reshape(1, -1)
 
         prediction = loaded_model.predict(data)

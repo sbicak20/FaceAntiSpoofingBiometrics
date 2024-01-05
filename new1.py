@@ -43,11 +43,6 @@ for batchfolder in batchfolders:
 
             # Denoising using bilateral filter
             img_denoised = restoration.denoise_bilateral(img, sigma_color=0.05, sigma_spatial=15)
-
-            # Histogram equalization
-            #img_equalized = exposure.equalize_hist(img_denoised)
-
-            # Local contrast enhancement using adaptive histogram equalization
             img_adaptive_equalized = exposure.equalize_adapthist(img_denoised, clip_limit=0.03)
 
             # Display the original, denoised, equalized, and adaptive equalized images
@@ -60,11 +55,8 @@ for batchfolder in batchfolders:
             #ax[1].imshow(img_denoised, cmap=plt.cm.gray)
             #ax[1].set_title('Denoised Image')
 
-            #ax[2].imshow(img_equalized, cmap=plt.cm.gray)
-            #ax[2].set_title('Equalized Image')
-
-            #ax[3].imshow(img_adaptive_equalized, cmap=plt.cm.gray)
-            #ax[3].set_title('Adaptive Equalized Image')
+            #ax[2].imshow(img_adaptive_equalized, cmap=plt.cm.gray)
+            #ax[2].set_title('Adaptive Equalized Image')
 #
             #for a in ax:
             #    a.axis('off')
