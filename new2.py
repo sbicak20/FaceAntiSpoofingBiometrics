@@ -31,17 +31,42 @@ for batchfolder in batchfolders:
             #greyscale
             img = imread(img_path, as_gray=True)
             #rezize
-            img = resize(img, (64, 64))
+            img_resized = resize(img, (64, 64))
             #denoising
-            img_denoised = restoration.denoise_bilateral(img, sigma_color=0.05, sigma_spatial=15)
+            img_denoised = restoration.denoise_bilateral(img_resized, sigma_color=0.05, sigma_spatial=15)
             #constract
             img_adaptive_equalized = exposure.equalize_adapthist(img_denoised, clip_limit=0.03)
+
+            # Display the original, denoised, equalized, and adaptive equalized images
+            fig, axes = plt.subplots(1, 5, figsize=(12, 3))
+            ax = axes.ravel()
+
+            ax[0].imshow(img, cmap=plt.cm.gray)
+            ax[0].set_title('Greyscale Image')
+
+            ax[1].imshow(img_denoised, cmap=plt.cm.gray)
+            ax[1].set_title('Resized Image')
+
+            ax[2].imshow(img_denoised, cmap=plt.cm.gray)
+            ax[2].set_title('Denoised Image')
+
+            ax[3].imshow(img_adaptive_equalized, cmap=plt.cm.gray)
+            ax[3].set_title('Adaptive Equalized Image')
+
 
             #feature extraction, HOG
             features_per_image, hog_image = hog(img_adaptive_equalized, orientations=8, pixels_per_cell=(10, 10), cells_per_block=(3, 3),
                                         visualize=True)
             features.append(features_per_image.flatten())
 
+            ax[4].imshow(hog_image, cmap=plt.cm.gray)
+            ax[4].set_title('Hog Image')
+
+            for a in ax:
+                a.axis('off')
+
+            plt.tight_layout()
+            plt.show()
             labels.append(category_index)
 
         data.extend(features)
@@ -57,7 +82,7 @@ for batchfolder in batchfolders:
     score = accuracy_score(y_prediction, y_test)
 
     print(f'{batchfolder}: {score * 100}% of samples were correctly classified.')
-    model_name = f'faceantispoofmodelafter{batchfolder}.joblib'
+    model_name = f'faceantispoofmodelafter{batchfolder}PCA.joblib'
     joblib.dump(classifier, model_name)
 
     # statistics
@@ -95,25 +120,7 @@ for batchfolder in batchfolders:
     print(f'AUC: {auc:.2f}')
 
 
-# Display the original, denoised, equalized, and adaptive equalized images
-            #fig, axes = plt.subplots(1, 4, figsize=(12, 3))
-            #ax = axes.ravel()
 
-            #ax[0].imshow(img, cmap=plt.cm.gray)
-            #ax[0].set_title('Original Image')
 
-            #ax[1].imshow(img_denoised, cmap=plt.cm.gray)
-            #ax[1].set_title('Denoised Image')
 
-            #ax[2].imshow(img_adaptive_equalized, cmap=plt.cm.gray)
-            #ax[2].set_title('Adaptive Equalized Image')
-#
 
-# ax[3].imshow(hog_image, cmap=plt.cm.gray)
-# ax[3].set_title('Hog Image')
-
-# for a in ax:
-#    a.axis('off')
-
-# plt.tight_layout()
-# plt.show()
