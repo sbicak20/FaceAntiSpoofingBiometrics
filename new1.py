@@ -3,10 +3,8 @@ import numpy as np
 from skimage.io import imread
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import joblib
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import roc_curve, roc_auc_score
 from skimage import exposure, restoration
 from skimage.transform import resize
 from skimage.feature import hog
@@ -34,7 +32,7 @@ for batchfolder in batchfolders:
             img = resize(img, (64, 64))
             #denoising
             img_denoised = restoration.denoise_bilateral(img, sigma_color=0.05, sigma_spatial=15)
-            #constract
+            #contrast
             img_adaptive_equalized = exposure.equalize_adapthist(img_denoised, clip_limit=0.03)
 
             #feature extraction, HOG
@@ -54,45 +52,60 @@ for batchfolder in batchfolders:
     classifier.fit(x_train, y_train)
 
     y_prediction = classifier.predict(x_test)
-    score = accuracy_score(y_prediction, y_test)
 
-    print(f'{batchfolder}: {score * 100}% of samples were correctly classified.')
+    accuracy = accuracy_score(y_prediction, y_test)
+    precision = precision_score(y_test, y_prediction, average='binary')
+    recall = recall_score(y_test, y_prediction, average='binary')
+    f1 = f1_score(y_test, y_prediction, average='binary')
+
+    print(f'{batchfolder}: {accuracy * 100}% of samples were correctly classified.')
     model_name = f'faceantispoofmodelafter{batchfolder}.joblib'
     joblib.dump(classifier, model_name)
 
-    # statistics
-    conf_matrix = confusion_matrix(y_test, y_prediction)
+    print(f'Accuracy Score: {accuracy}')
+    print(f'Precision Score: {precision}')
+    print(f'Recall Score: {recall}')
+    print(f'F1 Score: {f1}')
 
-    false_acceptances = conf_matrix[1, 0]  # Spoof as Live
-    false_rejections = conf_matrix[0, 1]  # Live as Spoof
+    #Plotting Accuracy and Precision
+    fig, ax1 = plt.subplots()
 
-    total_impostor_attempts = np.sum(conf_matrix[1, :])
-    total_genuine_attempts = np.sum(conf_matrix[0, :])
+    color = 'tab:red'
+    ax1.set_xlabel('Metrics')
+    ax1.set_ylabel('Accuracy', color=color)
+    ax1.plot(['Accuracy'], [accuracy], color=color, marker='o', label='Accuracy')
+    ax1.tick_params(axis='y', labelcolor=color)
 
-    far = (false_acceptances / total_impostor_attempts) * 100
-    frr = (false_rejections / total_genuine_attempts) * 100
-    print(f'false_acceptances: {false_acceptances:.2f}%')
-    print(f'total_impostor_attempts: {total_impostor_attempts:.2f}%')
-    print(f'FAR: {far:.2f}%')
+    ax2 = ax1.twinx()
+    color = 'tab:blue'
+    ax2.set_ylabel('Precision', color=color)
+    ax2.plot(['Precision'], [precision], color=color, marker='o', label='Precision')
+    ax2.tick_params(axis='y', labelcolor=color)
 
-    print(f'false_rejections: {false_rejections:.2f}%')
-    print(f'total_genuine_attempts: {total_genuine_attempts:.2f}%')
-    print(f'FRR: {frr:.2f}%')
-    # AUC
-    y_score = classifier.decision_function(x_test)
-
-    fpr, tpr, thresholds = roc_curve(y_test, y_score)
-
-    plt.figure(figsize=(8, 8))
-    plt.plot(fpr, tpr, label='ROC Curve')
-    plt.xlabel('False Positive Rate (FPR)')
-    plt.ylabel('True Positive Rate (TPR)')
-    plt.title('Receiver Operating Characteristic (ROC) Curve')
-    plt.legend()
+    fig.tight_layout()
+    plt.title('Accuracy and Precision')
     plt.show()
 
-    auc = roc_auc_score(y_test, y_score)
-    print(f'AUC: {auc:.2f}')
+    # Plotting Recall and F1 Score
+    fig, ax1 = plt.subplots()
+
+    color = 'tab:green'
+    ax1.set_xlabel('Metrics')
+    ax1.set_ylabel('Recall', color=color)
+    ax1.plot(['Recall'], [recall], color=color, marker='o', label='Recall')
+    ax1.tick_params(axis='y', labelcolor=color)
+
+    ax2 = ax1.twinx()
+    color = 'tab:purple'
+    ax2.set_ylabel('F1 Score', color=color)
+    ax2.plot(['F1 Score'], [f1], color=color, marker='o', label='F1 Score')
+    ax2.tick_params(axis='y', labelcolor=color)
+
+    fig.tight_layout()
+    plt.title('Recall and F1 Score')
+    plt.show()
+
+
 
 
 # Display the original, denoised, equalized, and adaptive equalized images
